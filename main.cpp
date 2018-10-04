@@ -1,108 +1,45 @@
-#include <iostream>
-#include <vector>
-#include<thread>
-#include <future>
+#include<iostream>
 
-int global_processorID =0;
-int global_processID   =0;
-
-struct Process
-{
-    int cycles;
-    int memory;
-    int pid;
-    Process()
-    {
-        pid = global_processID++;
-        cycles = rand()%1000;
-        memory = rand()%100;
-    }
-};
-
-class Processor
-{
-public:
-    Processor():processing(false)
-    {
-
-        this->processorID = global_processorID++;
-    }
-    bool processsing()
-    {
-        return processing;
-    }
-    void process(Process& process)
-    {
-        processing= true;
-
-        std::async(std::launch::async,[&]
-        {
-            std::cout<<"Processor ID: "<<this->processorID<<" ,started Processing for cycles"<<process.cycles<<" ,process id :"<<process.pid<<std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(process.cycles*10));
-            std::cout<<"Done Processing: "<<process.pid<<std::endl;
-            processing=false;
-        });
-    }
-    int processorID;
-private:
-    bool processing; 
-};
-class scheduler
-{
-public:
-
-    void addPrcessor(Processor& aprocessor)
-    {
-        processor.push_back(&aprocessor);
-    }
-
-    void prcess(Process& process)
-    {
-        getNextAvilableProcessor()->process(process);
-    }
-    Processor* getNextAvilableProcessor()
-    {
-        for(auto& a : processor)
-        {
-            if(!a->processsing())
-                return a;
-        }
-        std::cout<<"All processors are busy, Waiting for next avilable processor\n";
-        while(true)
-        {
-            for(auto& a : processor)
-            {
-                if(!a->processsing())
-                    return a;
-            }
-        }
-    }
-
-private:
-    std::vector<Processor*> processor;
-
-};
+using namespace std;
 
 int main()
 {
+    int n,bt[20],wt[20],tat[20],avwt=0,avtat=0,i,j;
+    cout<<"Enter total number of processes(maximum 20):";
+    cin>>n;
 
-int i =257;
-int*ptr = &i;
-    std::vector<Process> processes(100);
-    scheduler scheduler;
-    Processor one;
-    Processor two;
-    Processor three;
-    Processor four;
-    scheduler.addPrcessor(one);
-    scheduler.addPrcessor(two);
-    scheduler.addPrcessor(three);
-    scheduler.addPrcessor(four);
-
-    for(auto& process : processes)
+    cout<<"\nEnter Process Burst Time\n";
+    for(i=0;i<n;i++)
     {
-        scheduler.prcess(process);
-    };
+        cout<<"P["<<i+1<<"]:";
+        cin>>bt[i];
+    }
 
+    wt[0]=0;    //waiting time for first process is 0
 
+    //calculating waiting time
+    for(i=1;i<n;i++)
+    {
+        wt[i]=0;
+        for(j=0;j<i;j++)
+            wt[i]+=bt[j];
+    }
+
+    cout<<"\nProcess\t\tBurst Time\tWaiting Time\tTurnaround Time";
+
+    //calculating turnaround time
+    for(i=0;i<n;i++)
+    {
+        tat[i]=bt[i]+wt[i];
+        avwt+=wt[i];
+        avtat+=tat[i];
+        cout<<"\nP["<<i+1<<"]"<<"\t\t"<<bt[i]<<"\t\t"<<wt[i]<<"\t\t"<<tat[i];
+    }
+
+    avwt/=i;
+    avtat/=i;
+    cout<<"\n\nAverage Waiting Time:"<<avwt;
+    cout<<"\nAverage Turnaround Time:"<<avtat;
+
+    return 0;
 }
